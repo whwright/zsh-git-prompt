@@ -4,7 +4,7 @@
 from __future__ import print_function
 
 # change those symbols to whatever you prefer
-symbols = {'ahead of': '↑', 'behind': '↓', 'prehash':':'}
+symbols = {'ahead of': '↑·', 'behind': '↓·', 'prehash':':'}
 
 from subprocess import Popen, PIPE
 
@@ -58,9 +58,9 @@ else:
 		ahead = len([x for x in behead if x[0]=='>'])
 		behind = len(behead) - ahead
 		if behind:
-			remote += '%s%s' % (symbols['behind'], behind)
+			remote += ' %s%s' % (symbols['behind'], behind)
 		if ahead:
-			remote += '%s%s' % (symbols['ahead of'], ahead)
+			remote += ' %s%s' % (symbols['ahead of'], ahead)
 
 out = '\n'.join([
 	str(branch),
