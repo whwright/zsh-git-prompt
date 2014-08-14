@@ -1,7 +1,7 @@
 # To install source this file from your .zshrc file
 
 # Always reflects the right path
-export __GIT_PROMPT_DIR=$(readlink -f ${0%/*})
+export __GIT_PROMPT_DIR=$(dirname $0)
 # Initialize colors.
 autoload -U colors
 colors
