@@ -24,13 +24,13 @@ update_current_git_vars() {
     unset __CURRENT_GIT_STATUS
 
     if [ "$GIT_PROMPT_EXECUTABLE" = "python" ]; then
-        __GIT_STATUS=$(ZSH_THEME_GIT_PROMPT_HASH_PREFIX=$ZSH_THEME_GIT_PROMPT_HASH_PREFIX python "$__GIT_PROMPT_DIR/gitstatus.py" 2>/dev/null)
+        __GIT_CMD=$(ZSH_THEME_GIT_PROMPT_HASH_PREFIX=$ZSH_THEME_GIT_PROMPT_HASH_PREFIX python "$__GIT_PROMPT_DIR/gitstatus.py" 2>/dev/null)
         __CURRENT_GIT_STATUS=("${(@f)__GIT_STATUS}")
     else
-        __GIT_STATUS=$(git status --porcelain --branch &> /dev/null | $__GIT_PROMPT_DIR/src/.bin/gitstatus)
+        __GIT_CMD=$(git status --porcelain --branch &> /dev/null | $__GIT_PROMPT_DIR/src/.bin/gitstatus)
         __CURRENT_GIT_STATUS=("${(@s: :)__GIT_STATUS}")
     fi
-    unset __GIT_STATUS
+    unset __GIT_CMD
 
     GIT_BRANCH=$__CURRENT_GIT_STATUS[1]
     GIT_BEHIND=$__CURRENT_GIT_STATUS[2]
@@ -39,9 +39,7 @@ update_current_git_vars() {
     GIT_CONFLICTS=$__CURRENT_GIT_STATUS[5]
     GIT_CHANGED=$__CURRENT_GIT_STATUS[6]
     GIT_UNTRACKED=$__CURRENT_GIT_STATUS[7]
-    if [ "$GIT_PROMPT_EXECUTABLE" = "python" ]; then
-        GIT_STASHED=$__CURRENT_GIT_STATUS[8]
-    fi
+    GIT_STASHED=$__CURRENT_GIT_STATUS[8]
 }
 
 git_super_status() {
@@ -91,10 +89,9 @@ git_super_status() {
     fi
 }
 
-# Path to python script, see update_current_git_vars()
+# Always has path to this directory
 export __GIT_PROMPT_DIR=${0:A:h}
 export GIT_PROMPT_EXECUTABLE=${GIT_PROMPT_EXECUTABLE:-"python"}
-# export __GIT_STATUS_PY="${0:A:h}/gitstatus.py"
 
 # Load required modules
 autoload -U add-zsh-hook
@@ -124,3 +121,5 @@ ZSH_THEME_GIT_PROMPT_AHEAD="%{↑·%2G%}"
 ZSH_THEME_GIT_PROMPT_STASHED="%{$fg_bold[blue]%}%{⚑%G%}"
 ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$fg[cyan]%}%{…%G%}"
 ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg_bold[green]%}%{✔%G%}"
+
+# vim: set filetype=zsh:
