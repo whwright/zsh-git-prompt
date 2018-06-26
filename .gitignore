@@ -3,6 +3,7 @@
 
 # Directories
 src/.bin
+cxx/build
 .cache/
 **/__pycache__
 .pytest_cache

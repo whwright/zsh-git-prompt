@@ -23,11 +23,13 @@ chpwd_update_git_vars() {
 update_current_git_vars() {
     unset __CURRENT_GIT_STATUS
 
-    if [ "$GIT_PROMPT_EXECUTABLE" = "python" ]; then
+    if [ "$GIT_PROMPT_EXECUTABLE" = "haskell" ]; then
+        __GIT_CMD=$(git status --porcelain --branch &> /dev/null | $__GIT_PROMPT_DIR/src/.bin/gitstatus)
+    elif [ "$GIT_PROMPT_EXECUTABLE" = "cxx" ]; then
+        __GIT_CMD=$("$__GIT_PROMPT_DIR/cxx/build/gitstatus")
+    else
         local py_bin=${ZSH_GIT_PROMPT_PYBIN:-"python"}
         __GIT_CMD=$(git status --porcelain --branch &> /dev/null 2>&1 | ZSH_THEME_GIT_PROMPT_HASH_PREFIX=$ZSH_THEME_GIT_PROMPT_HASH_PREFIX $py_bin "$__GIT_PROMPT_DIR/gitstatus.py")
-    else
-        __GIT_CMD=$(git status --porcelain --branch &> /dev/null | $__GIT_PROMPT_DIR/src/.bin/gitstatus)
     fi
     __CURRENT_GIT_STATUS=("${(@s: :)__GIT_CMD}")
     unset __GIT_CMD
