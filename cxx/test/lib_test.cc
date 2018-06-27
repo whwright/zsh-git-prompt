@@ -168,13 +168,17 @@ TEST(GStatPath, Dirname) {
 }
 
 TEST(GStatPath, FileExists) {
-    std::string input = gstat::join(gstat::dirname(gstat::find_git_root()), std::string("CMakeLists.txt"));
+    std::string input = gstat::join(gstat::join(gstat::dirname(gstat::find_git_root()),
+                                    std::string("cxx")),
+                                    std::string("README.md"));
     EXPECT_TRUE(gstat::file_exists(input));
     EXPECT_FALSE(gstat::file_is_dir(input));
 }
 
 TEST(GStatPath, FileIsDir) {
-    std::string input = gstat::join(gstat::dirname(gstat::find_git_root()), std::string("src"));
+    std::string input = gstat::join(gstat::join(gstat::dirname(gstat::find_git_root()),
+                                    std::string("cxx")),
+                                    std::string("src"));
     EXPECT_TRUE(gstat::file_exists(input));
     EXPECT_TRUE(gstat::file_is_dir(input));
 }

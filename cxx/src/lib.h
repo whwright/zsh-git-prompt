@@ -101,9 +101,7 @@ inline std::string join(const std::string &path, const std::string &leaf) {
  * Returns: std::string - The last leaf of the path
  */
 inline std::string basename(const std::string &path) {
-    std::string temp = path;
-
-    return temp.replace(0, temp.rfind('/') + 1, "");
+    return path.substr(path.rfind('/') + 1);
 }
 
 /**
@@ -112,9 +110,7 @@ inline std::string basename(const std::string &path) {
  * Returns: std::string - The new path without last leaf
  */
 inline std::string dirname(const std::string &path) {
-    std::string temp = path;
-
-    return temp.replace(temp.rfind('/'), temp.length(), "");
+    return path.substr(0, path.rfind('/'));
 }
 
 /**
