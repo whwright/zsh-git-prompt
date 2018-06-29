@@ -35,7 +35,7 @@ include(GNUInstallDirs)
 link_directories(${CMAKE_BINARY_DIR}/lib/installed/${CMAKE_INSTALL_LIBDIR})
 include_directories(
     ${CMAKE_BINARY_DIR}/lib/installed/${CMAKE_INSTALL_INCLUDEDIR}
-    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}  # Make project includes from root
 )
 
@@ -69,6 +69,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
 else(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_definitions(-D_FORTIFY_SOURCE=2 -D_GLIBCXX_ASSERTIONS)
 endif(CMAKE_BUILD_TYPE STREQUAL "Release")
+
+# Will export build commands to build dir, for YCM users
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Just for coverage, still not working
 # TODO: Make it go!

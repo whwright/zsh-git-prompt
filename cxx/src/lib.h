@@ -3,8 +3,12 @@
 
 #include <sys/stat.h>
 
+#include <initializer_list>
 #include <string>
 #include <vector>
+
+#define PATH_SEP "/"
+#define ROOT_DIR "/"
 
 namespace gstat {
 
@@ -41,12 +45,15 @@ class GStats {
     std::uint_fast32_t untracked;
 };
 
+bool file_is_dir(const std::string &path);  // Inlined below
 class GPaths {
  public:
-    explicit GPaths(const std::string &_git_root): git_root(_git_root), tree_d("") {
-        this->set_tree_d();
+    explicit GPaths(const std::string &_git_root): git_root(_git_root), tree_d(_git_root) {
+        if (!file_is_dir(this->tree_d)) {
+            this->set_tree_d();
+        }
     }
-    std::string set_tree_d();
+    void set_tree_d();
 
     std::string head();
     std::string merge();
@@ -57,7 +64,8 @@ class GPaths {
     std::string tree_d;
 };
 
-GBranch parse_branch(const std::string &branch_line, const std::string &head_file);
+GBranch parse_branch(const std::string &branch_line,
+                     const std::string &head_file);
 GRemote parse_remote(const std::string &branch_line);
 GStats parse_stats(const std::vector<std::string> &lines);
 std::string current_gitstatus(const std::vector<std::string> &lines);
@@ -87,12 +95,20 @@ inline bool file_is_dir(const std::string &path) {
 }
 
 /**
- * Simple copy of os.path.join
+ * Simple copy of os.path.join, takes variable args as initializer_list
+ * Condition: Must be called with at least 1 element.
  *
  * Returns: std::string - The new joined path
  */
-inline std::string join(const std::string &path, const std::string &leaf) {
-    return path + "/" + leaf;
+inline std::string join(const std::initializer_list<std::string> &list) {
+    std::initializer_list<std::string>::const_iterator itr = list.begin();
+    std::string result(*itr);
+
+    for (++itr; itr != list.end(); ++itr) {
+        result += PATH_SEP + *itr;
+    }
+
+    return result;
 }
 
 /**
@@ -101,7 +117,7 @@ inline std::string join(const std::string &path, const std::string &leaf) {
  * Returns: std::string - The last leaf of the path
  */
 inline std::string basename(const std::string &path) {
-    return path.substr(path.rfind('/') + 1);
+    return path.substr(path.rfind(PATH_SEP) + 1);
 }
 
 /**
@@ -110,14 +126,15 @@ inline std::string basename(const std::string &path) {
  * Returns: std::string - The new path without last leaf
  */
 inline std::string dirname(const std::string &path) {
-    return path.substr(0, path.rfind('/'));
+    return path.substr(0, path.rfind(PATH_SEP));
 }
 
 /**
  * Simple hash, both characters are important.
  */
 inline std::uint_fast32_t hash_two_places(const std::string &word) {
-    return static_cast<std::uint_fast32_t>(word.at(0)) * 1000 + static_cast<std::uint_fast32_t>(word.at(1));
+    return static_cast<std::uint_fast32_t>(word.at(0)) * 1000 +
+           static_cast<std::uint_fast32_t>(word.at(1));
 }
 
 }  // namespace gstat

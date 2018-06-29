@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "lib.h"
+#include "src/lib.h"
 
 /**
  * Apply standard conversions to make suitable guard name.
@@ -21,21 +21,19 @@
  */
 std::string guard_name(const std::string &fname) {
     std::string guard = std::string(fname);
-    std::string::iterator itr = guard.begin();
-    for (std::string::const_iterator i = guard.begin(); i != guard.end(); ++i) {
-        *itr = ::toupper(*i);
+    for (std::string::iterator itr = guard.begin(); itr != guard.end(); ++itr) {
+        *itr = ::toupper(*itr);
         if (std::isalnum(*itr) == 0) {
             *itr = '_';
         }
-
-        ++itr;
     }
 
-    while (guard.length() != 0 && guard.at(0) == '_') {
-        guard = guard.substr(1);
+    uint_fast16_t cnt = 0;
+    while (guard.length() != 0 && guard.at(cnt) == '_') {
+        cnt++;
     }
 
-    return guard;
+    return guard.substr(cnt);
 }
 
 /**
@@ -44,9 +42,10 @@ std::string guard_name(const std::string &fname) {
  * Raises: std::runtime_error - Unable to complete mkdir
  */
 void mkdir_recurse(const std::string &path) {
-    if (path.length() == 0 || path == "/" || gstat::file_is_dir(path)) {
+    if (path.length() == 0 || path == ROOT_DIR || gstat::file_is_dir(path)) {
         return;
     }
+
     mkdir_recurse(gstat::dirname(path));
 
     uint_fast8_t err = mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -60,24 +59,26 @@ int main(int argc, char *argv[]) {
         std::cout << "Useage: " << argv[0] << " filename" << std::endl;
         return 1;
     }
-    std::string fname(argv[1]);
-    std::string guard = guard_name(fname);
 
+    std::string fname(argv[1]);
     mkdir_recurse(gstat::dirname(fname));
+
     std::ofstream fout(fname.c_str());
     if (!fout.good()) {
         std::cout << "CRITIAL ERROR: Cannot open file!" << std::endl;
         return 1;
     }
 
+    std::string guard = guard_name(fname);
     fout << "#ifndef " << guard << std::endl
         << "#define " << guard << std::endl <<std::endl;
 
     std::list<std::string> vals({ "AA", "AU", "DD", "DU", "UA", "UD", "UU" });
-    for (std::list<std::string>::const_iterator i = vals.begin(); i != vals.end(); ++i) {
-        fout << "#define HASH_CASE_" << *i << " "
-            << std::to_string(gstat::hash_two_places(*i)) << std::endl;
+    for (std::list<std::string>::const_iterator itr = vals.begin(); itr != vals.end(); ++itr) {
+        fout << "#define HASH_CASE_" << *itr << " "
+            << std::to_string(gstat::hash_two_places(*itr)) << std::endl;
     }
+
     fout << std::endl << "#endif  // " << guard;
     fout.close();
 

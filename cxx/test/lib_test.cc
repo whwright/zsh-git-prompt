@@ -25,7 +25,7 @@ class TFile {
         std::ofstream fout(fname.c_str());
         fout << text;
     }
-    explicit TFile(const std::string &text, const std::string &_fname): fname(_fname) {
+    TFile(const std::string &text, const std::string &_fname): fname(_fname) {
         std::ofstream fout(fname.c_str());
         fout << text;
     }
@@ -149,9 +149,11 @@ TEST(GStatParseStats, AllTestCases) {
 }
 
 TEST(GStatPath, Join) {
-    std::string input("/usr/bin");
-    std::string leaf("gcc");
-    std::string result = gstat::join(input, leaf);
+    std::string result = gstat::join({"/usr/bin", "gcc"});
+    EXPECT_EQ(result, "/usr/bin/gcc");
+    result = gstat::join({std::string("/usr/bin"), "gcc"});
+    EXPECT_EQ(result, "/usr/bin/gcc");
+    result = gstat::join({std::string("/usr/bin"), std::string("gcc")});
     EXPECT_EQ(result, "/usr/bin/gcc");
 }
 
@@ -168,17 +170,13 @@ TEST(GStatPath, Dirname) {
 }
 
 TEST(GStatPath, FileExists) {
-    std::string input = gstat::join(gstat::join(gstat::dirname(gstat::find_git_root()),
-                                    std::string("cxx")),
-                                    std::string("README.md"));
+    std::string input = gstat::join({gstat::dirname(gstat::find_git_root()), "zshrc.sh"});
     EXPECT_TRUE(gstat::file_exists(input));
     EXPECT_FALSE(gstat::file_is_dir(input));
 }
 
 TEST(GStatPath, FileIsDir) {
-    std::string input = gstat::join(gstat::join(gstat::dirname(gstat::find_git_root()),
-                                    std::string("cxx")),
-                                    std::string("src"));
+    std::string input = gstat::join({gstat::dirname(gstat::find_git_root()), "src"});
     EXPECT_TRUE(gstat::file_exists(input));
     EXPECT_TRUE(gstat::file_is_dir(input));
 }
@@ -190,10 +188,10 @@ TEST(GStatPath, GetCWD) {
 
 TEST(GStatPath, FindGitRoot) {
     std::string expect = gstat::get_cwd();
-    while (!gstat::file_exists(gstat::join(expect, std::string(".git")))) {
+    while (!gstat::file_exists(gstat::join({expect, ".git"}))) {
         expect = gstat::dirname(expect);
     }
-    expect = gstat::join(expect, std::string(".git"));
+    expect = gstat::join({expect, ".git"});
 
     std::string result = gstat::find_git_root();
     EXPECT_EQ(result, expect);
@@ -229,8 +227,8 @@ TEST(GStatRebaseProgress, NoFile) {
 
 TEST(GStatRebaseProgress, ShowProgress) {
     std::string cwd = gstat::get_cwd();
-    TFile next(std::string("2"), gstat::join(cwd, std::string("next")));
-    TFile last(std::string("5"), gstat::join(cwd, std::string("last")));
+    TFile next(std::string("2"), gstat::join({cwd, "next"}));
+    TFile last(std::string("5"), gstat::join({cwd, "last"}));
     EXPECT_EQ(gstat::rebase_progress(cwd), "2/5");
 }
 

@@ -1,4 +1,4 @@
-#include "lib.h"
+#include "src/lib.h"
 
 // Linux only
 #include <sys/poll.h>
@@ -8,8 +8,8 @@
 #include <array>
 #include <cassert>
 #include <climits>
-#include <cstdio>
 #include <cstdint>
+#include <cstdio>
 #include <cctype>
 #include <fstream>
 #include <iostream>
@@ -46,20 +46,14 @@ std::ostream & operator<<(std::ostream& os, const GStats &info) {
 }
 
 /**
- * This determines if we ware inside a worktree or not.
- * If not, the git root and tree directory are the same.
- * If so, the git_root is a file pointing to the tree_d in the source
- * repository on this filesystem. Read it, and find root from going up.
+ * This sets the tree_d when inside a git worktree.
+ * In this case, the .git folder is instead a file with the path to the
+ * worktree folder in the original repository.
+ * Relative this new folder, scan up until we hit the root.
  *
  * Returns: std::string - The path to the tree directory.
  */
-std::string GPaths::set_tree_d() {
-    this->tree_d = this->git_root;
-
-    if (file_is_dir(this->tree_d)) {
-        return this->tree_d;
-    }
-
+void GPaths::set_tree_d() {
     // File of format:
     //gitdir: /tmp/g/.git/worktrees/wg
     std::ifstream fin(this->tree_d.c_str());
@@ -73,25 +67,22 @@ std::string GPaths::set_tree_d() {
     while (basename(this->git_root) != ".git") {
         this->git_root = dirname(this->git_root);
     }
-
-    return this->tree_d;
 }
 
 std::string GPaths::head() {
-    return join(this->tree_d, std::string("HEAD"));
+    return join({this->tree_d, "HEAD"});
 }
 
 std::string GPaths::merge() {
-    return join(this->tree_d, std::string("MERGE_HEAD"));
+    return join({this->tree_d, "MERGE_HEAD"});
 }
 
 std::string GPaths::rebase() {
-    return join(this->tree_d, std::string("rebase-apply"));
+    return join({this->tree_d, "rebase-apply"});
 }
 
 std::string GPaths::stash() {
-    return join(join(join(this->git_root, std::string("logs")),
-                std::string("refs")), std::string("stash"));
+    return join({this->git_root, "logs", "refs", "stash"});
 }
 
 /**
@@ -101,13 +92,10 @@ std::string GPaths::stash() {
  */
 bool stdin_has_input() {
     struct pollfd fds;
-    uint_fast8_t ret;
     fds.fd = 0;
     fds.events = POLLIN;
 
-    ret = poll(&fds, 1, 0);
-
-    return ret == 1;
+    return poll(&fds, 1, 0) == 1;
 }
 
 /**
@@ -123,9 +111,9 @@ std::string run_cmd(const char *cmd) {
         throw std::runtime_error("Could not execute cmd: " + std::string(cmd));
     }
 
-    std::array<char, 100> buffer;
+    std::array<char, 1000> buffer;
     std::string text;
-    while (fgets(buffer.data(), 100, pfile) != nullptr) {
+    while (fgets(buffer.data(), 1000, pfile) != nullptr) {
         text.append(buffer.data());
     }
     pclose(pfile);
@@ -158,16 +146,16 @@ std::string get_cwd() {
  */
 std::string find_git_root() {
     std::string cwd = get_cwd();
-    std::string git_d = ".git";
-    std::string git_path = join(cwd, git_d);
+    std::string git_leaf = ".git";
+    std::string git_root = join({cwd, git_leaf});
 
-    while (cwd != "/") {
-        if (file_exists(git_path)) {
-            return git_path;
+    while (cwd != ROOT_DIR) {
+        if (file_exists(git_root)) {
+            return git_root;
         }
 
         cwd = dirname(cwd);
-        git_path = join(cwd, git_d);
+        git_root = join({cwd, git_leaf});
     }
 
     throw std::runtime_error("Could not find a git directory!");
@@ -178,11 +166,12 @@ std::string find_git_root() {
  *
  * Returns: GBranch structure.
  */
-GBranch parse_branch(const std::string &branch_line, const std::string &head_file) {
-    std::string temp = branch_line.substr(3);
+GBranch parse_branch(const std::string &branch_line,
+                     const std::string &head_file) {
     GBranch result;
     result.local = 1;
 
+    std::string temp = branch_line.substr(3);
     std::size_t found = temp.rfind(" [");
     if (found != std::string::npos) {
         temp = temp.substr(0, found);
@@ -263,13 +252,13 @@ GRemote parse_remote(const std::string &branch_line) {
 GStats parse_stats(const std::vector<std::string> &lines) {
     GStats stats;
 
-    for (std::vector<std::string>::const_iterator i = lines.begin(); i != lines.end(); ++i) {
-        if (i->at(0) == '?') {
+    for (std::vector<std::string>::const_iterator itr = lines.begin(); itr != lines.end(); ++itr) {
+        if (itr->at(0) == '?') {
             stats.untracked++;
             continue;
         }
 
-        switch (hash_two_places(*i)) {
+        switch (hash_two_places(*itr)) {
         case HASH_CASE_AA:
         case HASH_CASE_AU:
         case HASH_CASE_DD:
@@ -281,7 +270,7 @@ GStats parse_stats(const std::vector<std::string> &lines) {
             continue;
         }
 
-        switch (i->at(0)) {
+        switch (itr->at(0)) {
         case 'A':
         case 'C':
         case 'D':
@@ -290,7 +279,7 @@ GStats parse_stats(const std::vector<std::string> &lines) {
             stats.staged++;
         }
 
-        switch (i->at(1)) {
+        switch (itr->at(1)) {
         case 'C':
         case 'D':
         case 'M':
@@ -330,8 +319,8 @@ std::string rebase_progress(const std::string &rebase_d) {
     std::string result = "0";
     std::string temp;
 
-    std::ifstream next(join(rebase_d, std::string("next")).c_str());
-    std::ifstream last(join(rebase_d, std::string("last")).c_str());
+    std::ifstream next(join({rebase_d, "next"}).c_str());
+    std::ifstream last(join({rebase_d, "last"}).c_str());
     if (next.good() && last.good()) {
         result.clear();
         last >> temp;

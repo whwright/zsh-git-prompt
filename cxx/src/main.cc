@@ -2,13 +2,14 @@
  * A simple reimplementation in c++ for gitstatus.
  * Main just handles the input and delegates to library.
  */
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-#include "lib.h"
+#include "src/lib.h"
 
 /*
  * Main entry, this program works in two modes:
@@ -22,23 +23,13 @@ int main() {
     std::string part;
 
     if (gstat::stdin_has_input()) {
-        while (!std::cin.eof()) {
-            std::getline(std::cin, part);
+        while (std::getline(std::cin, part)) {
             lines.push_back(part);
         }
-
-        lines.pop_back();
     } else {
-        std::string all_text = gstat::run_cmd("git status --porcelain --branch 2>&1");
-
-        for (std::string::const_iterator i = all_text.begin();
-             i != all_text.end(); ++i) {
-            if (*i == '\n') {
-                lines.push_back(part);
-                part.clear();
-            } else {
-                part += *i;
-            }
+        std::stringstream ssin(gstat::run_cmd("git status --porcelain --branch 2>&1"));
+        while (std::getline(ssin, part)) {
+            lines.push_back(part);
         }
     }
 
