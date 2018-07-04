@@ -7,15 +7,16 @@
 
 #include <array>
 #include <cassert>
+#include <cctype>
 #include <climits>
 #include <cstdint>
 #include <cstdio>
-#include <cctype>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 #include "src/const.h"
 
@@ -24,23 +25,23 @@ namespace gstat {
 std::ostream & operator<<(std::ostream& os, const GBranch &info) {
     os  << info.branch << " "
         << info.upstream << " "
-        << std::to_string(info.local) << " ";
+        << info.local << " ";
 
     return os;
 }
 
 std::ostream & operator<<(std::ostream& os, const GRemote &info) {
-    os  << std::to_string(info.ahead) << " "
-        << std::to_string(info.behind) << " ";
+    os  << info.ahead << " "
+        << info.behind << " ";
 
     return os;
 }
 
 std::ostream & operator<<(std::ostream& os, const GStats &info) {
-    os  << std::to_string(info.staged) << " "
-        << std::to_string(info.conflicts) << " "
-        << std::to_string(info.changed) << " "
-        << std::to_string(info.untracked) << " ";
+    os  << info.staged << " "
+        << info.conflicts << " "
+        << info.changed << " "
+        << info.untracked << " ";
 
     return os;
 }
@@ -248,11 +249,13 @@ GRemote parse_remote(const std::string &branch_line) {
 
 /**
  * Parses the status information from porcelain output.
+ *
+ * Returns: GStats structure.
  */
-GStats parse_stats(const std::vector<std::string> &lines) {
+GStats parse_stats(const lines_iter_t &start, const lines_iter_t &end) {
     GStats stats;
 
-    for (std::vector<std::string>::const_iterator itr = lines.begin(); itr != lines.end(); ++itr) {
+    for (lines_iter_t itr = start; itr != end; ++itr) {
         if (itr->at(0) == '?') {
             stats.untracked++;
             continue;
@@ -338,9 +341,9 @@ std::string rebase_progress(const std::string &rebase_d) {
  */
 std::string current_gitstatus(const std::vector<std::string> &lines) {
     GPaths path(gstat::find_git_root());
-    GBranch info = parse_branch(lines[0], path.head());
-    GRemote remote = parse_remote(lines[0]);
-    GStats stats = parse_stats(lines);
+    GBranch info = parse_branch(lines.front(), path.head());
+    GRemote remote = parse_remote(lines.front());
+    GStats stats = parse_stats(lines.begin() + 1, lines.end());
     std::string stashes = stash_count(path.stash());
     std::string merge = std::to_string(
                         static_cast<uint_fast8_t>(file_exists(path.merge())));

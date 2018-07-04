@@ -7,10 +7,9 @@
 #include <cctype>
 #include <cstdint>
 #include <fstream>
+#include <initializer_list>
 #include <iostream>
-#include <list>
 #include <string>
-#include <vector>
 
 #include "src/lib.h"
 
@@ -56,7 +55,7 @@ void mkdir_recurse(const std::string &path) {
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
-        std::cout << "Useage: " << argv[0] << " filename" << std::endl;
+        std::cout << "Usage: " << argv[0] << " filename" << std::endl;
         return 1;
     }
 
@@ -73,10 +72,10 @@ int main(int argc, char *argv[]) {
     fout << "#ifndef " << guard << std::endl
         << "#define " << guard << std::endl <<std::endl;
 
-    std::list<std::string> vals({ "AA", "AU", "DD", "DU", "UA", "UD", "UU" });
-    for (std::list<std::string>::const_iterator itr = vals.begin(); itr != vals.end(); ++itr) {
+    std::initializer_list<std::string> vals({ "AA", "AU", "DD", "DU", "UA", "UD", "UU" });
+    for (std::initializer_list<std::string>::const_iterator itr = vals.begin(); itr != vals.end(); ++itr) {
         fout << "#define HASH_CASE_" << *itr << " "
-            << std::to_string(gstat::hash_two_places(*itr)) << std::endl;
+            << gstat::hash_two_places(*itr) << std::endl;
     }
 
     fout << std::endl << "#endif  // " << guard;

@@ -59,22 +59,24 @@ add_custom_command(
     COMMAND "./tests" "--gtest_color=yes"
 )
 
-# Options for compiling
-set(CMAKE_CXX_FLAGS "-std=c++11 -pedantic -pipe -fexceptions")
-set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -Og -fprofile-arcs -ftest-coverage -Wall -Wextra -Werror=format-security -Wundef -Winline -Wshadow -Wunused -Winit-self -Weffc++")
-set(CMAKE_CXX_FLAGS_RELEASE "-Ofast")
-# set(CMAKE_CXX_FLAGS_COVERAGE "-ggdb -O0 --coverage -fprofile-arcs -ftest-coverage -Wall -Wextra")
+# Flags & compiler
+set(CMAKE_CXX_FLAGS "-std=c++11 -pedantic -pipe -fexceptions -Winline")
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    add_definitions(-D_NDEBUG -D_FORTIFY_SOURCE=2)
-else(CMAKE_BUILD_TYPE STREQUAL "Release")
+    add_definitions(-D_FORTIFY_SOURCE=2)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
+else()
     add_definitions(-D_FORTIFY_SOURCE=2 -D_GLIBCXX_ASSERTIONS)
-endif(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -Og -Wall -Wextra -Werror=format-security -Wundef -Wshadow -Wunused -Winit-self -Weffc++")
+    # GProf: -pg
+    # GCov: -fprofile-arcs -ftest-coverage
+endif()
 
 # Will export build commands to build dir, for YCM users
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Just for coverage, still not working
 # TODO: Make it go!
+# set(CMAKE_CXX_FLAGS_COVERAGE "-ggdb -O0 --coverage -fprofile-arcs -ftest-coverage -Wall -Wextra")
 # if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
     # set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake)
     # include(CodeCoverage)
@@ -86,7 +88,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
     # # SET(CMAKE_C_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage")
 # endif(CMAKE_BUILD_TYPE STREQUAL "Coverage")
 
-# Should use these?
-# set(CMAKE_C_STANDARD 11)
+# TODO: Better way?
 # set(CMAKE_CXX_STANDARD 11)
-# message("${CMAKE_CXX_STANDARD}")
+# set(CMAKE_CXX_STANDARD_REQUIRED ON)

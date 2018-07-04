@@ -12,9 +12,12 @@
 
 namespace gstat {
 
+typedef std::vector<std::string>::const_iterator lines_iter_t;
+
 class GBranch {
  public:
-    GBranch(): branch(""), upstream(".."), local(0) {}
+    GBranch() noexcept: branch(""), upstream(".."), local(0) {}
+    ~GBranch() noexcept {};  // Suppress warning
 
     friend std::ostream & operator<<(std::iostream& os, const GBranch &info);
 
@@ -25,7 +28,7 @@ class GBranch {
 
 class GRemote {
  public:
-    GRemote(): ahead(0), behind(0) {}
+    GRemote() noexcept: ahead(0), behind(0) {}
 
     friend std::ostream & operator<<(std::iostream& os, const GRemote &info);
 
@@ -35,7 +38,7 @@ class GRemote {
 
 class GStats {
  public:
-    GStats(): changed(0), conflicts(0), staged(0), untracked(0) {}
+    GStats() noexcept: changed(0), conflicts(0), staged(0), untracked(0) {}
 
     friend std::ostream & operator<<(std::iostream& os, const GRemote &info);
 
@@ -67,7 +70,7 @@ class GPaths {
 GBranch parse_branch(const std::string &branch_line,
                      const std::string &head_file);
 GRemote parse_remote(const std::string &branch_line);
-GStats parse_stats(const std::vector<std::string> &lines);
+GStats parse_stats(const lines_iter_t &start, const lines_iter_t &end);
 std::string current_gitstatus(const std::vector<std::string> &lines);
 std::string stash_count(const std::string &stash_file);
 std::string rebase_progress(const std::string &rebase_d);

@@ -1,9 +1,10 @@
+#include <gtest/gtest.h>
+
 #include <cstdint>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
-
-#include <gtest/gtest.h>
+#include <vector>
 
 #include "src/lib.h"
 
@@ -141,7 +142,7 @@ TEST(GStatParseStats, AllTestCases) {
     };
     std::vector<std::string> lines(possible_strings, possible_strings + 19);
 
-    gstat::GStats result = gstat::parse_stats(lines);
+    gstat::GStats result = gstat::parse_stats(lines.begin(), lines.end());
     EXPECT_EQ(result.changed, 4);
     EXPECT_EQ(result.conflicts, 7);
     EXPECT_EQ(result.staged, 5);

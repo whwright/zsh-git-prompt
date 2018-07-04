@@ -6,6 +6,7 @@ Default build is debug.
 
 1. `cmake`, version >= 3.1.0
 2. C++ compiler implementing c++11 standard, for example GCC version >= 5.0
+3. pthread library for google tests
 
 ## To Build
 

@@ -33,14 +33,14 @@ int main() {
         }
     }
 
-    if (lines[0].find("fatal: ") == 0 &&
-            lines[0].find("ot a git repository") != std::string::npos) {
+    if (lines.front().find("fatal: ") == 0 &&
+            lines.front().find("ot a git repository") != std::string::npos) {
         return 0;
     }
 
     // Must be in a git repository past here
     try {
-        std::cout << gstat::current_gitstatus(lines) << std::endl;
+        std::cout << gstat::current_gitstatus(lines);
     } catch (const std::runtime_error &e) {
         // pass
     }
