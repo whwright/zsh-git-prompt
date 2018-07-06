@@ -1,3 +1,10 @@
+/**
+ *     The MIT License
+ *
+ *     Copyright (c) 2018 Jeremy Pallats/starcraft.man
+ *
+ * A simple test suite for the gstat library.
+ */
 #include <gtest/gtest.h>
 
 #include <cstdint>
@@ -6,7 +13,7 @@
 #include <iostream>
 #include <vector>
 
-#include "src/lib.h"
+#include "src/gstat.h"
 
 // Capture stdout
 // testing::internal::CaptureStdout();
@@ -14,7 +21,7 @@
 // std::string output = testing::internal::GetCapturedStdout();
 // std::cout << testing::internal::GetCapturedStdout() << std::endl;
 //
-// TODO: Test coverage, I'm lazy
+// TODO(starcraft.man) Setup test coverage build.
 
 /**
  * A simple tempfile generate. Write the text

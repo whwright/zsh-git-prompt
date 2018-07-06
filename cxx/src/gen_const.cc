@@ -1,9 +1,12 @@
 /**
- * Generate a simple header with predefined hashes for later case.
+ *     The MIT License
+ *
+ *     Copyright (c) 2018 Jeremy Pallats/starcraft.man
+ *
+ * Generate a simple header with predefined hashes for runtime use.
  */
 #include <sys/stat.h>
 
-#include <algorithm>
 #include <cctype>
 #include <cstdint>
 #include <fstream>
@@ -11,29 +14,9 @@
 #include <iostream>
 #include <string>
 
-#include "src/lib.h"
+#include "src/gstat.h"
 
-/**
- * Apply standard conversions to make suitable guard name.
- *
- * Returns: std::string - The guard name
- */
-std::string guard_name(const std::string &fname) {
-    std::string guard = std::string(fname);
-    for (std::string::iterator itr = guard.begin(); itr != guard.end(); ++itr) {
-        *itr = ::toupper(*itr);
-        if (std::isalnum(*itr) == 0) {
-            *itr = '_';
-        }
-    }
-
-    uint_fast16_t cnt = 0;
-    while (guard.length() != 0 && guard.at(cnt) == '_') {
-        cnt++;
-    }
-
-    return guard.substr(cnt);
-}
+#define HEADER_GUARD "CXX_BUILD_SRC_CONST_H_"
 
 /**
  * Just a simple mkdir clone, recurse until exists.
@@ -68,9 +51,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    std::string guard = guard_name(fname);
-    fout << "#ifndef " << guard << std::endl
-        << "#define " << guard << std::endl <<std::endl;
+    fout << "#ifndef " << HEADER_GUARD << std::endl
+        << "#define " << HEADER_GUARD << std::endl <<std::endl;
 
     std::initializer_list<std::string> vals({ "AA", "AU", "DD", "DU", "UA", "UD", "UU" });
     for (std::initializer_list<std::string>::const_iterator itr = vals.begin(); itr != vals.end(); ++itr) {
@@ -78,7 +60,7 @@ int main(int argc, char *argv[]) {
             << gstat::hash_two_places(*itr) << std::endl;
     }
 
-    fout << std::endl << "#endif  // " << guard;
+    fout << std::endl << "#endif  // " << HEADER_GUARD << std::endl;
     fout.close();
 
     return 0;

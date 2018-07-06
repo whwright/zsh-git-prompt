@@ -11,27 +11,14 @@ add_custom_command (
 )
 
 # Build core project
-# add_library(gstat src/lib.cc)
-add_library(gstat src/lib.cc ${CMAKE_BINARY_DIR}/src/const.h)
+add_library(gstat src/gstat.cc ${CMAKE_BINARY_DIR}/src/const.h)
 add_executable(gitstatus src/main.cc)
 target_link_libraries(gitstatus gstat)
-
-# Third-party library
-include(ExternalProject)
-ExternalProject_Add(googletest
-    PREFIX "${CMAKE_BINARY_DIR}/lib"
-    GIT_REPOSITORY "https://github.com/google/googletest.git"
-    GIT_TAG "master"
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/lib/installed
-)
-
-# Prevent build on all targets build
-set_target_properties(googletest PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 # Define ${CMAKE_INSTALL_...} variables
 include(GNUInstallDirs)
 
-# Specify where third-party libraries are located
+# Specify directories required
 link_directories(${CMAKE_BINARY_DIR}/lib/installed/${CMAKE_INSTALL_LIBDIR})
 include_directories(
     ${CMAKE_BINARY_DIR}/lib/installed/${CMAKE_INSTALL_INCLUDEDIR}
@@ -39,25 +26,38 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}  # Make project includes from root
 )
 
-# This is required for googletest
-find_package(Threads REQUIRED)
+# Optional requirement for test suite
+find_package(Threads)
+if(${Threads_FOUND})
+  # Fetch googletest inside build dir
+  include(ExternalProject)
+  ExternalProject_Add(googletest
+      PREFIX "${CMAKE_BINARY_DIR}/lib"
+      GIT_REPOSITORY "https://github.com/google/googletest.git"
+      GIT_TAG "master"
+      CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/lib/installed
+  )
 
-# Test
-add_executable(tests test/lib_test.cc)
-target_link_libraries(tests gstat gtest Threads::Threads)
+  # Prevent build on all targets build
+  set_target_properties(googletest PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
-# Make sure third-party is built before executable
-add_dependencies(tests googletest)
-set_target_properties(tests PROPERTIES EXCLUDE_FROM_ALL TRUE)
+  # Test
+  add_executable(tests test/test_gstat.cc)
+  target_link_libraries(tests gstat gtest Threads::Threads)
 
-# Add post build running of tests
-add_custom_command(
-    TARGET tests
-    COMMENT "Run google tests post build"
-    POST_BUILD
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMAND "./tests" "--gtest_color=yes"
-)
+  # Make sure third-party is built before executable
+  add_dependencies(tests googletest)
+  set_target_properties(tests PROPERTIES EXCLUDE_FROM_ALL TRUE)
+
+  # Add post build running of tests
+  add_custom_command(
+      TARGET tests
+      COMMENT "Run google tests post build"
+      POST_BUILD
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      COMMAND "./tests" "--gtest_color=yes"
+  )
+endif()
 
 # Flags & compiler
 set(CMAKE_CXX_FLAGS "-std=c++11 -pedantic -pipe -fexceptions -Winline")
@@ -65,10 +65,12 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_definitions(-D_FORTIFY_SOURCE=2)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
 else()
+
     add_definitions(-D_FORTIFY_SOURCE=2 -D_GLIBCXX_ASSERTIONS)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -Og -Wall -Wextra -Werror=format-security -Wundef -Wshadow -Wunused -Winit-self -Weffc++")
-    # GProf: -pg
-    # GCov: -fprofile-arcs -ftest-coverage
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -Og -Wall -Wextra -Werror=format-security")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshadow -Wunused -Winit-self -Weffc++")
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")  # GProf
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")  # GCov
 endif()
 
 # Will export build commands to build dir, for YCM users

@@ -1,5 +1,10 @@
-#ifndef GSTATUS_LIB_H
-#define GSTATUS_LIB_H
+/**
+ *     The MIT License
+ *
+ *     Copyright (c) 2018 Jeremy Pallats/starcraft.man
+ */
+#ifndef CXX_SRC_GSTAT_H_
+#define CXX_SRC_GSTAT_H_
 
 #include <sys/stat.h>
 
@@ -142,4 +147,4 @@ inline std::uint_fast32_t hash_two_places(const std::string &word) {
 
 }  // namespace gstat
 
-#endif  // GSTATUS_LIB_H
+#endif  // CXX_SRC_GSTAT_H_

@@ -1,4 +1,8 @@
-/*
+/**
+ *     The MIT License
+ *
+ *     Copyright (c) 2018 Jeremy Pallats/starcraft.man
+ *
  * A simple reimplementation in c++ for gitstatus.
  * Main just handles the input and delegates to library.
  */
@@ -9,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "src/lib.h"
+#include "src/gstat.h"
 
 /*
  * Main entry, this program works in two modes:

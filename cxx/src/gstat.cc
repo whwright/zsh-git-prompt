@@ -1,4 +1,10 @@
-#include "src/lib.h"
+/**
+ *     The MIT License
+ *
+ *     Copyright (c) 2018 Jeremy Pallats/starcraft.man
+ *
+ */
+#include "src/gstat.h"
 
 // Linux only
 #include <sys/poll.h>
@@ -55,8 +61,8 @@ std::ostream & operator<<(std::ostream& os, const GStats &info) {
  * Returns: std::string - The path to the tree directory.
  */
 void GPaths::set_tree_d() {
-    // File of format:
-    //gitdir: /tmp/g/.git/worktrees/wg
+    // Format of the file:
+    //      gitdir: /tmp/g/.git/worktrees/wg
     std::ifstream fin(this->tree_d.c_str());
     if (!fin.good()) {
         throw std::runtime_error("Could not open wotkree file: " + this->tree_d);
