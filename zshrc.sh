@@ -32,10 +32,9 @@ update_current_git_vars() {
     __CURRENT_GIT_STATUS=("${(@s: :)__GIT_CMD}")
     unset __GIT_CMD
 
+    local offset=0
     if [[ "$__CURRENT_GIT_STATUS" == "No commits yet on"* ]]; then
         offset=4
-    else
-        offset=0
     fi
 
     GIT_BRANCH=$__CURRENT_GIT_STATUS[$((offset+1))]
