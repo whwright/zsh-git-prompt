@@ -32,18 +32,24 @@ update_current_git_vars() {
     __CURRENT_GIT_STATUS=("${(@s: :)__GIT_CMD}")
     unset __GIT_CMD
 
-    GIT_BRANCH=$__CURRENT_GIT_STATUS[1]
-    GIT_AHEAD=$__CURRENT_GIT_STATUS[2]
-    GIT_BEHIND=$__CURRENT_GIT_STATUS[3]
-    GIT_STAGED=$__CURRENT_GIT_STATUS[4]
-    GIT_CONFLICTS=$__CURRENT_GIT_STATUS[5]
-    GIT_CHANGED=$__CURRENT_GIT_STATUS[6]
-    GIT_UNTRACKED=$__CURRENT_GIT_STATUS[7]
-    GIT_STASHED=$__CURRENT_GIT_STATUS[8]
-    GIT_LOCAL_ONLY=$__CURRENT_GIT_STATUS[9]
-    GIT_UPSTREAM=$__CURRENT_GIT_STATUS[10]
-    GIT_MERGING=$__CURRENT_GIT_STATUS[11]
-    GIT_REBASE=$__CURRENT_GIT_STATUS[12]
+    if [[ "$__CURRENT_GIT_STATUS" == "No commits yet on"* ]]; then
+        offset=4
+    else
+        offset=0
+    fi
+
+    GIT_BRANCH=$__CURRENT_GIT_STATUS[$((offset+1))]
+    GIT_AHEAD=$__CURRENT_GIT_STATUS[$((offset+2))]
+    GIT_BEHIND=$__CURRENT_GIT_STATUS[$((offset+3))]
+    GIT_STAGED=$__CURRENT_GIT_STATUS[$((offset+4))]
+    GIT_CONFLICTS=$__CURRENT_GIT_STATUS[$((offset+5))]
+    GIT_CHANGED=$__CURRENT_GIT_STATUS[$((offset+6))]
+    GIT_UNTRACKED=$__CURRENT_GIT_STATUS[$((offset+7))]
+    GIT_STASHED=$__CURRENT_GIT_STATUS[$((offset+8))]
+    GIT_LOCAL_ONLY=$__CURRENT_GIT_STATUS[$((offset+9))]
+    GIT_UPSTREAM=$__CURRENT_GIT_STATUS[$((offset+10))]
+    GIT_MERGING=$__CURRENT_GIT_STATUS[$((offset+11))]
+    GIT_REBASE=$__CURRENT_GIT_STATUS[$((offset+12))]
 }
 
 git_super_status() {
